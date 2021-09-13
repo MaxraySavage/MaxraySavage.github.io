@@ -1,19 +1,26 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Maxray Savage</title>
-    <link>MaxraySavage.github.io/</link>
-    <description>Recent content on Maxray Savage</description>
-    <generator>Hugo -- gohugo.io</generator>
-    <language>en-us</language>
-    <copyright>&lt;a href=&#34;https://creativecommons.org/licenses/by-nc/4.0/&#34; target=&#34;_blank&#34; rel=&#34;noopener&#34;&gt;CC BY-NC 4.0&lt;/a&gt;</copyright><atom:link href="MaxraySavage.github.io/index.xml" rel="self" type="application/rss+xml" />
+    <title>Maxray&#39;s Website</title>
+    <link>https://examplesite.com/</link>
+    <description>Recent content on Maxray&#39;s Website</description>
+    <generator>Hugo -- gohugo.io</generator><atom:link href="https://examplesite.com/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title></title>
-      <link>MaxraySavage.github.io/about/</link>
+      <title>About Me</title>
+      <link>https://examplesite.com/about/</link>
+      <pubDate>Tue, 02 Feb 2021 00:00:00 +0000</pubDate>
+      
+      <guid>https://examplesite.com/about/</guid>
+      <description>Maxray likes to play Go but they are not very good at it.</description>
+    </item>
+    
+    <item>
+      <title>Archive</title>
+      <link>https://examplesite.com/archives/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
-      <guid>MaxraySavage.github.io/about/</guid>
-      <description></description>
+      <guid>https://examplesite.com/archives/</guid>
+      <description>archives</description>
     </item>
     
   </channel>

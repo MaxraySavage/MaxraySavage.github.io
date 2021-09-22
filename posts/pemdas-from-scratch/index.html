@@ -1,0 +1,431 @@
+<!doctype html><html lang=en dir=auto>
+<head><meta charset=utf-8>
+<meta http-equiv=x-ua-compatible content="IE=edge">
+<meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no">
+<meta name=robots content="index, follow">
+<title>PEMDAS From Scratch | Maxray's Website</title>
+<meta name=keywords content="javascript">
+<meta name=description content="Coding an arithmetic expression evaluator in Javascript">
+<meta name=author content="Maxray Savage">
+<link rel=canonical href=https://maxraysavage.github.io/posts/pemdas-from-scratch/>
+<meta name=google-site-verification content="XYZabc">
+<link href=/assets/css/stylesheet.min.1eef9c740af75b4e5f773d9d5f757e03e3df71f3a308e73070cc73d55a59a7d7.css integrity="sha256-Hu+cdAr3W05fdz2dX3V+A+PfcfOjCOcwcMxz1VpZp9c=" rel="preload stylesheet" as=style>
+<link rel=icon href=https://maxraysavage.github.io/favicon.ico>
+<link rel=icon type=image/png sizes=16x16 href=https://maxraysavage.github.io/favicon-16x16.png>
+<link rel=icon type=image/png sizes=32x32 href=https://maxraysavage.github.io/favicon-32x32.png>
+<link rel=apple-touch-icon href=https://maxraysavage.github.io/apple-touch-icon.png>
+<link rel=mask-icon href=https://maxraysavage.github.io/safari-pinned-tab.svg>
+<meta name=theme-color content="#2e2e33">
+<meta name=msapplication-TileColor content="#2e2e33">
+<meta name=generator content="Hugo 0.88.1">
+<script type=application/javascript>var doNotTrack=!1;doNotTrack||(window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)},ga.l=+new Date,ga('create','UA-123-45','auto'),ga('send','pageview'))</script>
+<script async src=https://www.google-analytics.com/analytics.js></script>
+<meta property="og:title" content="PEMDAS From Scratch">
+<meta property="og:description" content="Coding an arithmetic expression evaluator in Javascript">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://maxraysavage.github.io/posts/pemdas-from-scratch/">
+<meta property="article:published_time" content="2021-09-14T15:48:44-04:00">
+<meta property="article:modified_time" content="2021-09-14T15:48:44-04:00"><meta property="og:site_name" content="Maxray's Website">
+<meta name=twitter:card content="summary">
+<meta name=twitter:title content="PEMDAS From Scratch">
+<meta name=twitter:description content="Coding an arithmetic expression evaluator in Javascript">
+<script type=application/ld+json>{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Posts","item":"https://maxraysavage.github.io/posts/"},{"@type":"ListItem","position":2,"name":"PEMDAS From Scratch","item":"https://maxraysavage.github.io/posts/pemdas-from-scratch/"}]}</script>
+<script type=application/ld+json>{"@context":"https://schema.org","@type":"BlogPosting","headline":"PEMDAS From Scratch","name":"PEMDAS From Scratch","description":"Intro A few months ago I made an edutainment game for The Odin Project\u0026amp;rsquo;s first game jame. My team had decided to build a game for practicing basic math. I took on the task of …","keywords":["javascript"],"articleBody":"Intro A few months ago I made an edutainment game for The Odin Project’s first game jame. My team had decided to build a game for practicing basic math. I took on the task of generating the problems as appropriate for each level of the game. It was hard! Generating random arithmetic expressions within certain difficulty constraints wasn’t simple. In order to enforce our constraints, I wrote my own script to evaluate expressions step by step so I could tell if my problems conformed to my difficulty constraints. Which meant I had to get very friendly with PEMDAS.\nI got the impression that it was actually an interesting problem to write code to solve a math problem in the same order and with the same etchniques as how a person might do it. This turned out to be pretty tricky but I had a lot of fun doing it so I decided top make it into my first ever blog post!\nLet’s Define the Problem I’ve found that when you attempt to solve a problem with code you can either spend a few extra minutes defining your terms really well in the beginning or get totally lost halfway through whatever your project is. So let’s take a moment to think about what we’re doing here.\nWhat are we making? A function written in javascript. The function should take an arithmetic expression as an input and return the result of evaluating the expression. It should ressolve individual operations in the order dictated by PEMDAS.\nI did some research on how other people have solved this problem but nothing really seemed to fit my requirements because I wanted to evaluate my expressions in the same way that a person would and have the freedom to step through evaluation one operation at a time.\nWhat is an arithmetic expression? So what really is an arithmetic expression? If you dig deeply enough you end up in philosophy. Instead let’s allow for a subset of arithmetic expressions specifically\n there will be numbers there will be binary operators (operators that take two numbers and spit out a number) there will be parentheses  We need to decide on the expected format for our input. So, what is an arithmetic expression to us. We have some choices here. We could represent an arithmetic expression as a string like '2 + 7 x 4'. There are benefits to this. For our game I ended up using this method mainly so that other people using my code to generate expressions wouldn’t have to deal with formatting and could just print problems to the player. This led to every function I wrote having a preamble splitting the string into an array at the beginning and then rejoining everything at the end. For this article I decided to instead expect an expression to be an array. So for example the expression $3 + 2$ will be an array with 3 elements like this: [3, '+', 2]. We can also include parentheses, so we might have something like $(3 + 2) \\times 7$ which would look like ['(', 3, '+', 2, ')', 'x', 7]\nSo our input will be an array of this form. We will trust that our inputs are well formed for the purposes of this algorithm. So no missing parentheses, chains of addition signs or anything else. Not very realistic but maybe validating that could be another article for you to enjoy! Let’s save some fun for later.\nHow do you evaluate an expression? There’s a relatively ubiquitous algorithm for evaluating arithmetic expressions called PEMDAS. This algorithm tends to be pretty tricky as evidenced by the biannual viral tweet where the internet argues about the right way to evaluate some expression or another. PEMDAS is not only an algorithm, it is also an acronym! It stands for\n Parentheses Exponentiation Multiplication Division Addition Subtraction  The thing is, PEMDAS actually only has 4 tiers of evaluation, not the 6 you might expect.\nLet’s consult this handy diagram:\nSo the multiplication and division happen in the same tier and the addition and subtraction happen in the same tier. Most of these operators are evaluated from left to right. However, exponents are tricky! Exponents are right associative which means that, within a sequence of exponents, we should evaluate the rightmost pair first.\nIn pseudocode, the PEMDAS algorithm looks like\nfunction evaluateExpression (arithmetic expression): while expression contains parentheses: replace the expression within parentheses with its evaluated form while the the expression contains binary operators execute the binary operators in the correct order  Parentheses:  Evaluate subexpressions in parentheses Replace the subexpression in parentheses with the result of evaluation Examples:  $(2 + 3) * 4$ would become $5 * 4$ We must evaluate the deepest nested pair of parentheses first so $(2 + (15 / 5)) * 4$ would first become $(2 + 3) * 4$ and then $5 * 4$     Exponents:  Exponents are the first tier of operators to evaluate Exponents are denoted in javascript with the binary operator ** Examples:  $12 + 3^2$ becomes $12 + 9$ $12 + 3^2$ in javascript looks like 12 + 3**2 Evaluated right to left (which is weird!) so 2**1**3 becomes $2^{1^3} \\rightarrow 2^1 \\rightarrow 2$ which is NOT what would happen if you went left to right. That would be $2^{1^3} \\rightarrow 2^3 \\rightarrow 8$     Multiplication and Division:  Multiplication and division are the second tier of operators to evaluate In javascript, multiplication is represented by * and division is represented by / We will evaluate multiplication and division from left to right, simultaneously Examples:  $6 + 12 / 4 \\times 2 \\rightarrow 6 + 3 \\times 2 \\rightarrow 6 + 6$     Addition and Subtraction:  Addition and subtraction are the third tier of operators to evaluate In javascript, addition is represented by + and subtraction is represented by - Addition and subtraction are evaluated from left to right, simultaneously Examples:  $18 - 7 + 4 \\rightarrow 11 + 4 \\rightarrow 15$      Plan of attack So we know what are inputs and outputs are and understand our general steps we need to take to make this happen. My sense is that parentheses will be best implemented using recursion after we get EMDAS done. So we’ll start with solving expressions without parentheses and go from there.\nSolution We will evaluate the expression in three tiers, first exponentiation, then multiplication and division, then addition and subtraction. We’ll get to parentheses at the end.\nEvaluation Tiers Let’s declare an array called evaluationTiers where each index contains all the operands we will look for at each tier. For us this will look like:\nconst evaluationTiers = [ { operators: ['**'], leftAssociative: false }, { operators: ['*', '/'], leftAssociative: true }, { operators: ['+', '-'], leftAssociative: true }, ]; Function Skeleton Now we can start to build our function evaluateExpression (I’m using the spread operator ... here to copy the input array into a new array object) Remember that, for us, an expression is an array that looks like [1, '+', 2]\nfunction evalExpression(expressionArray) { const expression = [...expressionArray]; evaluationTiers.forEach((tier) = { // do something  }); return expression[0]; } Finding the Next operator What do we do within the forEach callback ? We need to look through the expression to see if any operations in the current tier are represented and we need to figure out which of those operations we should do first.\nI did this with the findIndex array method because I could search with a custom callback function instead of looking for just one operator at a time. This function finds the index of the next operation that should be executed within a given tier.\nfunction getNextOperatorIndex(expression, tier) { let nextOperatorIndex = expression.findIndex((o) = tier.operators.includes(o)); // If the operator is left associative or not found at all, we're done  if (tier.leftAssociative || nextOperatorIndex === -1) { return nextOperatorIndex; } /* If the operator is right associative we must see if that operator is the first of a sequence of operators within the tier If so, we jump forward until we get to the last operator in the sequence For example with '2 ** 3 ** 1 + 1 ** 2' we should get the second ** */ while (nextOperatorIndex + 2  expression.length \u0026\u0026 tier.operators.includes(expression[nextOperatorIndex + 2])) { nextOperatorIndex += 2; } return nextOperatorIndex; } The way we jump forward by two’s for right associative operators may seem weird but we need to remember that, because of how we will handle parentheses later, this function will never actually be used on an expression with parentheses.\nFleshing out the Loop So we know we can find the next operand. We can build a while loop to keep performing operations until all operations in the current tier are performed like so\nfunction evaluateExpression(expressionArray) { const expression = [...expressionArray]; evaluationTiers.forEach((tier) = { let nextOperatorIndex = getNextOperatorIndex(expression, tier); while (nextOperatorIndex !== -1) { // Do something  nextOperatorIndex = getNextOperatorIndex(expression, tier); } }); return expression[0]; } Evaluating Individual Operations Now, what do we do in our while loop? We should probably do something with nextOperatorIndex. We want to evaluate whatever operation that nextOperatorIndex is pointing us to. Let’s look at a small example. If we had the array [1, '+', 3, 'x', 7] and nextOperatorIndex is currently 3, what should we do? We need to:\n Look at the operator at index 3 See if it tells us to multiply, divide, add, etc. Get the result of performing the operation on the numbers at index 2 and 4 Then replace the items at index 2, 3 and 4 with the result So in this case we replace the [3, 'x', 7] portion of the array with 21 leaving us with [1, '+', 21]. How do we do this with code? First we can write a helper function to handle figuring out what operation to do and then doing it.  function evalOperation(operandOne, operator, operandTwo) { switch (operator) { case '**': return operandOne ** operandTwo; case '*': return operandOne * operandTwo; case '/': return operandOne / operandTwo; case '+': return operandOne + operandTwo; case '-': return operandOne - operandTwo; default: return 'Error, invalid operator'; } } Now we have to replace the operand and its operators with the result of performing the operation. For this we’ll write a new function. I decided to have the function operate directly on the expression it is passed rather than return a modified copy of the input array though that approach would also be possible. We can then use this helper function to replace the array elements from index = nextOperatorIndex - 1, to nextOperatorIndex + 1 with the result of the operation like so:\nfunction performOperation(expression, index) { const result = evalOperation( ...expression.slice(index - 1, index + 2) ); expression.splice(index - 1, 3, result); } All togther now Putting together all the functions we have written we have our expression evaluator! We still can’t work with parentheses but other than that we;’re doing great.\nfunction evaluateExpression(expressionArray) { const expression = [...expressionArray]; evaluationTiers.forEach((tier) = { let nextOperatorIndex = getNextOperatorIndex(expression, tier); while (nextOperatorIndex !== -1) { performOperation(expression, nextOperatorIndex) nextOperatorIndex = getNextOperatorIndex(expression, tier); } }); return expression[0]; } And this will work for any expressions that don’t contain parentheses!\nAdding Parentheses Parentheses are a little bit tricker than everything else. However, they are a great opportunity to work on recursive problem solving. What we can do is, check to see if our expression has parentheses. If it does, we can take whatever is in the parentheses and call solveExpression on whatever lies between the parentheses. As these subcalls happen, they will eventually get to an expression that has no parentheses, solve that one, and then recurse out of there. So what does this look like? Something like this:\nBuilding out another loop function evaluateExpression(expressionArray) { const expression = [...expressionArray]; let openingParenthesesIndex = expression.findIndex((o) = o === '('); while (openingParenthesesIndex !== -1) { // do something  openingParenthesesIndex = expression.findIndex((o) = o === '('); } evaluationTiers.forEach((tier) = { let nextOperatorIndex = getNextOperatorIndex(expression, tier); while (nextOperatorIndex !== -1) { const result = evalOperation( ...expression.slice(nextOperatorIndex - 1, nextOperatorIndex + 2) ); expression.splice(nextOperatorIndex - 1, 3, result); nextOperatorIndex = getNextOperatorIndex(expression, tier); } }); return expression[0]; } Where is the closing parentheses? But how do we find the closing parentheses? We can declare a variable called parentheses depth that will keep track of how deep into parentheses we go. We have to do this so we dont think the first closing paren in an expression like $(2*(2+3) + 2)$ is the one we are looking for and try and treat $2*(2+3$ as a subexpression.\nfunction findClosingParenthesesIndex(expression, openingParenthesesIndex) { let parenthesesDepth = 1; for (let i = openingParenthesesIndex + 1; i  expression.length; i += 1) { if (expression[i] === '(') { parenthesesDepth += 1; } else if (expression[i] === ')') { parenthesesDepth -= 1; if (parenthesesDepth === 0) { return i; } } } return 'Error: no closing parentheses found'; } The whole thing function evaluateExpression(expressionArray) { const expression = [...expressionArray]; let openingParenthesesIndex = expression.findIndex((o) = o === '('); while (openingParenthesesIndex !== -1) { const subexpression = getSubexpression(expression, openingParenthesesIndex); // recurse into subexpression  const subexpressionResult = evaluateExpression(subexpression); // we need to add two to length  // because subexpression doesn't include its bounding parentheses  expression.splice( openingParenthesesIndex, subexpression.length + 2, subexpressionResult, ); openingParenthesesIndex = expression.findIndex((o) = o === '('); } evaluationTiers.forEach((tier) = { let nextOperatorIndex = getNextOperatorIndex(expression, tier); while (nextOperatorIndex !== -1) { performOperation(expression, nextOperatorIndex); nextOperatorIndex = getNextOperatorIndex(expression, tier); } }); return expression[0]; } Formatting a String into an Expression Array Just for fun, I wrote a method to take in a string and format it like an expression array we’ve been using. I like a chance to practice using regex, call me crazy.\nfunction parseExpression(expressionString) { const expressionArray = Array.from( expressionString.matchAll( /-?[0-9]+\\.?[0-9]*|\\*{2}|\\*{1}|\\/|\\+|-|\\(|\\)/g ) ).map((v) = v[0]); return expressionArray.map((term) = { if (Number.isNaN(parseFloat(term))) { return term; } return parseFloat(term); }); } Closing Thoughts I feel like writing this forced me to refactor my code to be easir to present in this blog and write more helper functions so that the main function would be less bloated looking.\nI really like any time I get to use recursion in a reasonable way so I enjoyed figuring out how to deal with parentheses. I like this project because I feel like I came away witha deeper understanding of how expressions are evaluated. What a wild ride! You can check out the game calculationster here:\n","wordCount":"2398","inLanguage":"en","datePublished":"2021-09-14T15:48:44-04:00","dateModified":"2021-09-14T15:48:44-04:00","author":{"@type":"Person","name":"Maxray Savage"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://maxraysavage.github.io/posts/pemdas-from-scratch/"},"publisher":{"@type":"Organization","name":"Maxray's Website","logo":{"@type":"ImageObject","url":"https://maxraysavage.github.io/favicon.ico"}}}</script>
+<script>MathJax={tex:{inlineMath:[["$","$"],["\\(","\\)"]],displayMath:[["$$","$$"],["\\[","\\]"]],processEscapes:!0,processEnvironments:!0},options:{skipHtmlTags:["script","noscript","style","textarea","pre"]}},window.addEventListener("load",a=>{document.querySelectorAll("mjx-container").forEach(function(a){a.parentElement.classList+="has-jax"})})</script>
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script type=text/javascript id=MathJax-script async src=https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js></script>
+<style>code.has-jax{font:inherit;font-size:.9rem}</style>
+</head>
+<body id=top>
+<script>localStorage.getItem("pref-theme")==="dark"?document.body.classList.add('dark'):localStorage.getItem("pref-theme")==="light"?document.body.classList.remove('dark'):window.matchMedia('(prefers-color-scheme: dark)').matches&&document.body.classList.add('dark')</script>
+<noscript>
+<style type=text/css>#theme-toggle,.top-link{display:none}</style>
+</noscript>
+<header class=header>
+<nav class=nav>
+<div class=logo>
+<a href=https://maxraysavage.github.io/ accesskey=h title="Maxray's Website (Alt + H)">Maxray's Website</a>
+<span class=logo-switches>
+<button id=theme-toggle accesskey=t title="(Alt + T)"><svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg><svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+</button>
+</span>
+</div>
+<ul id=menu onscroll=menu_on_scroll()>
+<li>
+<a href=https://maxraysavage.github.io/archives/ title=archives>
+<span>archives</span>
+</a>
+</li>
+<li>
+<a href=https://maxraysavage.github.io/tags/ title=tags>
+<span>tags</span>
+</a>
+</li></ul>
+</nav>
+</header>
+<main class=main>
+<article class=post-single>
+<header class=post-header>
+<div class=breadcrumbs>
+<a href=https://maxraysavage.github.io/>Home</a>&nbsp;»&nbsp;<a href=https://maxraysavage.github.io/posts/>Posts</a>
+</div>
+<h1 class=post-title>
+PEMDAS From Scratch
+</h1>
+<div class=post-description>
+Coding an arithmetic expression evaluator in Javascript
+</div>
+<div class=post-meta>
+September 14, 2021&nbsp;·&nbsp;12 min&nbsp;·&nbsp;Maxray Savage
+</div>
+</header>
+<div class=toc>
+<details>
+<summary accesskey=c title="(Alt + C)">
+<div class=details>Table of Contents</div>
+</summary>
+<div class=inner><ul><li>
+<a href=#intro aria-label=Intro>Intro</a></li><li>
+<a href=#lets-define-the-problem aria-label="Let&amp;rsquo;s Define the Problem">Let&rsquo;s Define the Problem</a><ul>
+<li>
+<a href=#what-are-we-making aria-label="What are we making?">What are we making?</a></li><li>
+<a href=#what-is-an-arithmetic-expression aria-label="What is an arithmetic expression?">What is an arithmetic expression?</a></li><li>
+<a href=#how-do-you-evaluate-an-expression aria-label="How do you evaluate an expression?">How do you evaluate an expression?</a></li><li>
+<a href=#plan-of-attack aria-label="Plan of attack">Plan of attack</a></li></ul>
+</li><li>
+<a href=#solution aria-label=Solution>Solution</a><ul>
+<li>
+<a href=#evaluation-tiers aria-label="Evaluation Tiers">Evaluation Tiers</a></li><li>
+<a href=#function-skeleton aria-label="Function Skeleton">Function Skeleton</a></li><li>
+<a href=#finding-the-next-operator aria-label="Finding the Next operator">Finding the Next operator</a></li><li>
+<a href=#fleshing-out-the-loop aria-label="Fleshing out the Loop">Fleshing out the Loop</a></li><li>
+<a href=#evaluating-individual-operations aria-label="Evaluating Individual Operations">Evaluating Individual Operations</a></li><li>
+<a href=#all-togther-now aria-label="All togther now">All togther now</a></li></ul>
+</li><li>
+<a href=#adding-parentheses aria-label="Adding Parentheses">Adding Parentheses</a><ul>
+<li>
+<a href=#building-out-another-loop aria-label="Building out another loop">Building out another loop</a></li><li>
+<a href=#where-is-the-closing-parentheses aria-label="Where is the closing parentheses?">Where is the closing parentheses?</a></li><li>
+<a href=#the-whole-thing aria-label="The whole thing">The whole thing</a></li></ul>
+</li><li>
+<a href=#formatting-a-string-into-an-expression-array aria-label="Formatting a String into an Expression Array">Formatting a String into an Expression Array</a></li><li>
+<a href=#closing-thoughts aria-label="Closing Thoughts">Closing Thoughts</a></li></ul>
+</div>
+</details>
+</div>
+<div class=post-content>
+<h2 id=intro>Intro<a hidden class=anchor aria-hidden=true href=#intro>#</a></h2>
+<p>A few months ago I made an edutainment game for The Odin Project&rsquo;s first game jame. My team had decided to build a game for practicing basic math. I took on the task of generating the problems as appropriate for each level of the game. It was hard! Generating random arithmetic expressions within certain difficulty constraints wasn&rsquo;t simple. In order to enforce our constraints, I wrote my own script to evaluate expressions step by step so I could tell if my problems conformed to my difficulty constraints. Which meant I had to get very friendly with <em><strong>PEMDAS</strong></em>.</p>
+<p>I got the impression that it was actually an interesting problem to write code to solve a math problem in the same order and with the same etchniques as how a person might do it. This turned out to be pretty tricky but I had a lot of fun doing it so I decided top make it into my first <em>ever</em> blog post!</p>
+<h2 id=lets-define-the-problem>Let&rsquo;s Define the Problem<a hidden class=anchor aria-hidden=true href=#lets-define-the-problem>#</a></h2>
+<p>I&rsquo;ve found that when you attempt to solve a problem with code you can either spend a few extra minutes defining your terms really well in the beginning or get totally lost halfway through whatever your project is. So let&rsquo;s take a moment to think about what we&rsquo;re doing here.</p>
+<h3 id=what-are-we-making>What are we making?<a hidden class=anchor aria-hidden=true href=#what-are-we-making>#</a></h3>
+<p>A function written in javascript. The function should take an arithmetic expression as an input and return the result of evaluating the expression. It should ressolve individual operations in the order dictated by <strong>PEMDAS</strong>.</p>
+<p>I did some research on how other people have solved this problem but nothing really seemed to fit my requirements because I wanted to evaluate my expressions in the same way that a person would and have the freedom to step through evaluation one operation at a time.</p>
+<h3 id=what-is-an-arithmetic-expression>What is an arithmetic expression?<a hidden class=anchor aria-hidden=true href=#what-is-an-arithmetic-expression>#</a></h3>
+<p>So what really <em>is</em> an arithmetic expression? If you dig deeply enough you end up in philosophy. Instead let&rsquo;s allow for a subset of arithmetic expressions specifically</p>
+<ul>
+<li>there will be numbers</li>
+<li>there will be binary operators (operators that take two numbers and spit out a number)</li>
+<li>there will be parentheses</li>
+</ul>
+<p>We need to decide on the expected format for our input. So, what is an arithmetic expression <em><strong>to us</strong></em>. We have some choices here. We could represent an arithmetic expression as a string like <code>'2 + 7 x 4'</code>. There are benefits to this. For our game I ended up using this method mainly so that other people using my code to generate expressions wouldn&rsquo;t have to deal with formatting and could just print problems to the player. This led to every function I wrote having a preamble splitting the string into an array at the beginning and then rejoining everything at the end. For this article I decided to instead expect an expression to be an array. So for example the expression <code>$3 + 2$</code> will be an array with 3 elements like this: <code>[3, '+', 2]</code>. We can also include parentheses, so we might have something like <code>$(3 + 2) \times 7$</code> which would look like <code>['(', 3, '+', 2, ')', 'x', 7]</code></p>
+<p>So our input will be an array of this form. We will trust that our inputs are well formed for the purposes of this algorithm. So no missing parentheses, chains of addition signs or anything else. Not very realistic but maybe validating that could be another article for you to enjoy! Let&rsquo;s save some fun for later.</p>
+<h3 id=how-do-you-evaluate-an-expression>How do you evaluate an expression?<a hidden class=anchor aria-hidden=true href=#how-do-you-evaluate-an-expression>#</a></h3>
+<p>There&rsquo;s a relatively ubiquitous algorithm for evaluating arithmetic expressions called PEMDAS. This algorithm tends to be pretty tricky as evidenced by the biannual viral tweet where the internet argues about the right way to evaluate some expression or another. PEMDAS is not only an algorithm, it is also an acronym! It stands for</p>
+<ul>
+<li>Parentheses</li>
+<li>Exponentiation</li>
+<li>Multiplication</li>
+<li>Division</li>
+<li>Addition</li>
+<li>Subtraction</li>
+</ul>
+<p>The thing is, PEMDAS actually only has 4 tiers of evaluation, not the 6 you might expect.</p>
+<p>Let&rsquo;s consult this handy diagram:</p>
+<p><img src=/pemdas-diagram.png alt="PEMDAS diagram"></p>
+<p>So the multiplication and division happen in the same tier and the addition and subtraction happen in the same tier. Most of these operators are evaluated from left to right. However, exponents are tricky! Exponents are <em><strong><a href=https://en.wikipedia.org/wiki/Associative_property>right associative</a></strong></em> which means that, within a sequence of exponents, we should evaluate the rightmost pair first.</p>
+<p>In pseudocode, the PEMDAS algorithm looks like</p>
+<pre tabindex=0><code>function evaluateExpression (arithmetic expression):
+   while expression contains parentheses:
+      replace the expression within parentheses with its evaluated form
+   while the the expression contains binary operators
+      execute the binary operators in the correct order
+</code></pre><ul>
+<li><strong>Parentheses</strong>:
+<ul>
+<li>Evaluate subexpressions in parentheses</li>
+<li>Replace the subexpression in parentheses with the result of evaluation</li>
+<li>Examples:
+<ul>
+<li><code>$(2 + 3) * 4$</code> would become <code>$5 * 4$</code></li>
+<li>We must evaluate the deepest nested pair of parentheses first so <code>$(2 + (15 / 5)) * 4$</code> would first become <code>$(2 + 3) * 4$</code> and then <code>$5 * 4$</code></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><strong>Exponents</strong>:
+<ul>
+<li>Exponents are the first tier of operators to evaluate</li>
+<li>Exponents are denoted in javascript with the binary operator <code>**</code></li>
+<li>Examples:
+<ul>
+<li><code>$12 + 3^2$</code> becomes <code>$12 + 9$</code></li>
+<li><code>$12 + 3^2$</code> in javascript looks like <code>12 + 3**2</code></li>
+<li>Evaluated right to left (which is weird!) so <code>2**1**3</code> becomes <code>$2^{1^3} \rightarrow 2^1 \rightarrow 2$</code> which is NOT what would happen if you went left to right. That would be <code>$2^{1^3} \rightarrow 2^3 \rightarrow 8$</code></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><strong>Multiplication and Division</strong>:
+<ul>
+<li>Multiplication and division are the second tier of operators to evaluate</li>
+<li>In javascript, multiplication is represented by <code>*</code> and division is represented by <code>/</code></li>
+<li>We will evaluate multiplication and division from left to right, simultaneously</li>
+<li>Examples:
+<ul>
+<li><code>$6 + 12 / 4 \times 2 \rightarrow 6 + 3 \times 2 \rightarrow 6 + 6$</code></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><strong>Addition and Subtraction</strong>:
+<ul>
+<li>Addition and subtraction are the third tier of operators to evaluate</li>
+<li>In javascript, addition is represented by <code>+</code> and subtraction is represented by <code>-</code></li>
+<li>Addition and subtraction are evaluated from left to right, simultaneously</li>
+<li>Examples:
+<ul>
+<li><code>$18 - 7 + 4 \rightarrow 11 + 4 \rightarrow 15$</code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id=plan-of-attack>Plan of attack<a hidden class=anchor aria-hidden=true href=#plan-of-attack>#</a></h3>
+<p>So we know what are inputs and outputs are and understand our general steps we need to take to make this happen. My sense is that parentheses will be best implemented using recursion after we get <code>EMDAS</code> done. So we&rsquo;ll start with solving expressions without parentheses and go from there.</p>
+<h2 id=solution>Solution<a hidden class=anchor aria-hidden=true href=#solution>#</a></h2>
+<p>We will evaluate the expression in three tiers, first <code>exponentiation</code>, then <code>multiplication and division</code>, then <code>addition and subtraction</code>. We&rsquo;ll get to parentheses at the end.</p>
+<h3 id=evaluation-tiers>Evaluation Tiers<a hidden class=anchor aria-hidden=true href=#evaluation-tiers>#</a></h3>
+<p>Let&rsquo;s declare an array called evaluationTiers where each index contains all the operands we will look for at each tier. For us this will look like:</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-javascript data-lang=javascript><span style=color:#66d9ef>const</span> <span style=color:#a6e22e>evaluationTiers</span> <span style=color:#f92672>=</span> [
+  { <span style=color:#a6e22e>operators</span><span style=color:#f92672>:</span> [<span style=color:#e6db74>&#39;**&#39;</span>], <span style=color:#a6e22e>leftAssociative</span><span style=color:#f92672>:</span> <span style=color:#66d9ef>false</span> },
+  { <span style=color:#a6e22e>operators</span><span style=color:#f92672>:</span> [<span style=color:#e6db74>&#39;*&#39;</span>, <span style=color:#e6db74>&#39;/&#39;</span>], <span style=color:#a6e22e>leftAssociative</span><span style=color:#f92672>:</span> <span style=color:#66d9ef>true</span> },
+  { <span style=color:#a6e22e>operators</span><span style=color:#f92672>:</span> [<span style=color:#e6db74>&#39;+&#39;</span>, <span style=color:#e6db74>&#39;-&#39;</span>], <span style=color:#a6e22e>leftAssociative</span><span style=color:#f92672>:</span> <span style=color:#66d9ef>true</span> },
+];
+</code></pre></div><h3 id=function-skeleton>Function Skeleton<a hidden class=anchor aria-hidden=true href=#function-skeleton>#</a></h3>
+<p>Now we can start to build our function <code>evaluateExpression</code> (I&rsquo;m using the spread operator <code>...</code> here to copy the input array into a new array object)
+Remember that, for us, an expression is an array that looks like <code>[1, '+', 2]</code></p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-javascript data-lang=javascript><span style=color:#66d9ef>function</span> <span style=color:#a6e22e>evalExpression</span>(<span style=color:#a6e22e>expressionArray</span>) {
+   <span style=color:#66d9ef>const</span> <span style=color:#a6e22e>expression</span> <span style=color:#f92672>=</span> [...<span style=color:#a6e22e>expressionArray</span>];
+   <span style=color:#a6e22e>evaluationTiers</span>.<span style=color:#a6e22e>forEach</span>((<span style=color:#a6e22e>tier</span>) =&gt; {
+    <span style=color:#75715e>// do something
+</span><span style=color:#75715e></span>  });
+  <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>expression</span>[<span style=color:#ae81ff>0</span>];
+}   
+</code></pre></div><h3 id=finding-the-next-operator>Finding the Next operator<a hidden class=anchor aria-hidden=true href=#finding-the-next-operator>#</a></h3>
+<p>What do we do within the <code>forEach</code> callback ?
+We need to look through the expression to see if any operations in the current tier are represented and we need to figure out which of those operations we should do first.</p>
+<p>I did this with the <code>findIndex</code> array method because I could search with a custom callback function instead of looking for just one operator at a time. This function finds the index of the next operation that should be executed within a given tier.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-javascript data-lang=javascript><span style=color:#66d9ef>function</span> <span style=color:#a6e22e>getNextOperatorIndex</span>(<span style=color:#a6e22e>expression</span>, <span style=color:#a6e22e>tier</span>) {
+  <span style=color:#66d9ef>let</span> <span style=color:#a6e22e>nextOperatorIndex</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>expression</span>.<span style=color:#a6e22e>findIndex</span>((<span style=color:#a6e22e>o</span>) =&gt; <span style=color:#a6e22e>tier</span>.<span style=color:#a6e22e>operators</span>.<span style=color:#a6e22e>includes</span>(<span style=color:#a6e22e>o</span>));
+  <span style=color:#75715e>// If the operator is left associative or not found at all, we&#39;re done
+</span><span style=color:#75715e></span>  <span style=color:#66d9ef>if</span> (<span style=color:#a6e22e>tier</span>.<span style=color:#a6e22e>leftAssociative</span> <span style=color:#f92672>||</span> <span style=color:#a6e22e>nextOperatorIndex</span> <span style=color:#f92672>===</span> <span style=color:#f92672>-</span><span style=color:#ae81ff>1</span>) {
+    <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>nextOperatorIndex</span>;
+  }
+  <span style=color:#75715e>/*
+</span><span style=color:#75715e>    If the operator is right associative
+</span><span style=color:#75715e>    we must see if that operator is the first of a sequence of operators within the tier
+</span><span style=color:#75715e>    If so, we jump forward until we get to the last operator in the sequence
+</span><span style=color:#75715e>    For example with &#39;2 ** 3 ** 1 + 1 ** 2&#39; we should get the second **
+</span><span style=color:#75715e>  */</span>
+  <span style=color:#66d9ef>while</span> (<span style=color:#a6e22e>nextOperatorIndex</span> <span style=color:#f92672>+</span> <span style=color:#ae81ff>2</span> <span style=color:#f92672>&lt;</span> <span style=color:#a6e22e>expression</span>.<span style=color:#a6e22e>length</span>
+    <span style=color:#f92672>&amp;&amp;</span> <span style=color:#a6e22e>tier</span>.<span style=color:#a6e22e>operators</span>.<span style=color:#a6e22e>includes</span>(<span style=color:#a6e22e>expression</span>[<span style=color:#a6e22e>nextOperatorIndex</span> <span style=color:#f92672>+</span> <span style=color:#ae81ff>2</span>])) {
+    <span style=color:#a6e22e>nextOperatorIndex</span> <span style=color:#f92672>+=</span> <span style=color:#ae81ff>2</span>;
+  }
+  <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>nextOperatorIndex</span>;
+}
+</code></pre></div><p>The way we jump forward by two&rsquo;s for right associative operators may seem weird but we need to remember that, because of how we will handle parentheses later, this function will never actually be used on an expression with parentheses.</p>
+<h3 id=fleshing-out-the-loop>Fleshing out the Loop<a hidden class=anchor aria-hidden=true href=#fleshing-out-the-loop>#</a></h3>
+<p>So we know we can find the next operand. We can build a while loop to keep performing operations until all operations in the current tier are performed like so</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-javascript data-lang=javascript><span style=color:#66d9ef>function</span> <span style=color:#a6e22e>evaluateExpression</span>(<span style=color:#a6e22e>expressionArray</span>) {
+  <span style=color:#66d9ef>const</span> <span style=color:#a6e22e>expression</span> <span style=color:#f92672>=</span> [...<span style=color:#a6e22e>expressionArray</span>];
+  <span style=color:#a6e22e>evaluationTiers</span>.<span style=color:#a6e22e>forEach</span>((<span style=color:#a6e22e>tier</span>) =&gt; {
+    <span style=color:#66d9ef>let</span> <span style=color:#a6e22e>nextOperatorIndex</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>getNextOperatorIndex</span>(<span style=color:#a6e22e>expression</span>, <span style=color:#a6e22e>tier</span>);
+    <span style=color:#66d9ef>while</span> (<span style=color:#a6e22e>nextOperatorIndex</span> <span style=color:#f92672>!==</span> <span style=color:#f92672>-</span><span style=color:#ae81ff>1</span>) {
+      <span style=color:#75715e>// Do something
+</span><span style=color:#75715e></span>      <span style=color:#a6e22e>nextOperatorIndex</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>getNextOperatorIndex</span>(<span style=color:#a6e22e>expression</span>, <span style=color:#a6e22e>tier</span>);
+    }
+  });
+  <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>expression</span>[<span style=color:#ae81ff>0</span>];
+}   
+</code></pre></div><h3 id=evaluating-individual-operations>Evaluating Individual Operations<a hidden class=anchor aria-hidden=true href=#evaluating-individual-operations>#</a></h3>
+<p>Now, what do we do in our while loop? We should probably do something with nextOperatorIndex. We want to evaluate whatever operation that nextOperatorIndex is pointing us to. Let&rsquo;s look at a small example. If we had the array <code>[1, '+', 3, 'x', 7]</code> and <code>nextOperatorIndex</code> is currently <code>3</code>, what should we do? We need to:</p>
+<ul>
+<li>Look at the operator at index 3</li>
+<li>See if it tells us to multiply, divide, add, etc.</li>
+<li>Get the result of performing the operation on the numbers at index 2 and 4</li>
+<li>Then replace the items at index 2, 3 and 4 with the result
+So in this case we replace the <code>[3, 'x', 7]</code> portion of the array with 21 leaving us with <code>[1, '+', 21]</code>. How do we do this with code? First we can write a helper function to handle figuring out what operation to do and then doing it.</li>
+</ul>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-javascript data-lang=javascript><span style=color:#66d9ef>function</span> <span style=color:#a6e22e>evalOperation</span>(<span style=color:#a6e22e>operandOne</span>, <span style=color:#a6e22e>operator</span>, <span style=color:#a6e22e>operandTwo</span>) {
+  <span style=color:#66d9ef>switch</span> (<span style=color:#a6e22e>operator</span>) {
+    <span style=color:#66d9ef>case</span> <span style=color:#e6db74>&#39;**&#39;</span><span style=color:#f92672>:</span>
+      <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>operandOne</span> <span style=color:#f92672>**</span> <span style=color:#a6e22e>operandTwo</span>;
+
+    <span style=color:#66d9ef>case</span> <span style=color:#e6db74>&#39;*&#39;</span><span style=color:#f92672>:</span>
+      <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>operandOne</span> <span style=color:#f92672>*</span> <span style=color:#a6e22e>operandTwo</span>;
+
+    <span style=color:#66d9ef>case</span> <span style=color:#e6db74>&#39;/&#39;</span><span style=color:#f92672>:</span>
+      <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>operandOne</span> <span style=color:#f92672>/</span> <span style=color:#a6e22e>operandTwo</span>;
+
+    <span style=color:#66d9ef>case</span> <span style=color:#e6db74>&#39;+&#39;</span><span style=color:#f92672>:</span>
+      <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>operandOne</span> <span style=color:#f92672>+</span> <span style=color:#a6e22e>operandTwo</span>;
+
+    <span style=color:#66d9ef>case</span> <span style=color:#e6db74>&#39;-&#39;</span><span style=color:#f92672>:</span>
+      <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>operandOne</span> <span style=color:#f92672>-</span> <span style=color:#a6e22e>operandTwo</span>;
+
+    <span style=color:#66d9ef>default</span><span style=color:#f92672>:</span>
+      <span style=color:#66d9ef>return</span> <span style=color:#e6db74>&#39;Error, invalid operator&#39;</span>;
+  }
+}
+</code></pre></div><p>Now we have to replace the operand and its operators with the result of performing the operation. For this we&rsquo;ll write a new function. I decided to have the function operate directly on the expression it is passed rather than return a modified copy of the input array though that approach would also be possible. We can then use this helper function to replace the array elements from index = nextOperatorIndex - 1, to nextOperatorIndex + 1 with the result of the operation like so:</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-javascript data-lang=javascript><span style=color:#66d9ef>function</span> <span style=color:#a6e22e>performOperation</span>(<span style=color:#a6e22e>expression</span>, <span style=color:#a6e22e>index</span>) {
+  <span style=color:#66d9ef>const</span> <span style=color:#a6e22e>result</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>evalOperation</span>(
+    ...<span style=color:#a6e22e>expression</span>.<span style=color:#a6e22e>slice</span>(<span style=color:#a6e22e>index</span> <span style=color:#f92672>-</span> <span style=color:#ae81ff>1</span>, <span style=color:#a6e22e>index</span> <span style=color:#f92672>+</span> <span style=color:#ae81ff>2</span>)
+  );
+  <span style=color:#a6e22e>expression</span>.<span style=color:#a6e22e>splice</span>(<span style=color:#a6e22e>index</span> <span style=color:#f92672>-</span> <span style=color:#ae81ff>1</span>, <span style=color:#ae81ff>3</span>, <span style=color:#a6e22e>result</span>);
+}
+</code></pre></div><h3 id=all-togther-now>All togther now<a hidden class=anchor aria-hidden=true href=#all-togther-now>#</a></h3>
+<p>Putting together all the functions we have written we have our expression evaluator! We still can&rsquo;t work with parentheses but other than that we;&rsquo;re doing great.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-javascript data-lang=javascript><span style=color:#66d9ef>function</span> <span style=color:#a6e22e>evaluateExpression</span>(<span style=color:#a6e22e>expressionArray</span>) {
+   <span style=color:#66d9ef>const</span> <span style=color:#a6e22e>expression</span> <span style=color:#f92672>=</span> [...<span style=color:#a6e22e>expressionArray</span>];
+   <span style=color:#a6e22e>evaluationTiers</span>.<span style=color:#a6e22e>forEach</span>((<span style=color:#a6e22e>tier</span>) =&gt; {
+    <span style=color:#66d9ef>let</span> <span style=color:#a6e22e>nextOperatorIndex</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>getNextOperatorIndex</span>(<span style=color:#a6e22e>expression</span>, <span style=color:#a6e22e>tier</span>);
+    <span style=color:#66d9ef>while</span> (<span style=color:#a6e22e>nextOperatorIndex</span> <span style=color:#f92672>!==</span> <span style=color:#f92672>-</span><span style=color:#ae81ff>1</span>) {
+      <span style=color:#a6e22e>performOperation</span>(<span style=color:#a6e22e>expression</span>, <span style=color:#a6e22e>nextOperatorIndex</span>)
+      <span style=color:#a6e22e>nextOperatorIndex</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>getNextOperatorIndex</span>(<span style=color:#a6e22e>expression</span>, <span style=color:#a6e22e>tier</span>);
+    }
+  });
+   <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>expression</span>[<span style=color:#ae81ff>0</span>];
+}    
+</code></pre></div><p>And this will work for any expressions that don&rsquo;t contain parentheses!</p>
+<h2 id=adding-parentheses>Adding Parentheses<a hidden class=anchor aria-hidden=true href=#adding-parentheses>#</a></h2>
+<p>Parentheses are a little bit tricker than everything else. However, they are a great opportunity to work on recursive problem solving. What we can do is, check to see if our expression has parentheses. If it does, we can take whatever is in the parentheses and call solveExpression on whatever lies between the parentheses. As these subcalls happen, they will eventually get to an expression that has no parentheses, solve that one, and then recurse out of there. So what does this look like? Something like this:</p>
+<h3 id=building-out-another-loop>Building out another loop<a hidden class=anchor aria-hidden=true href=#building-out-another-loop>#</a></h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-javascript data-lang=javascript><span style=color:#66d9ef>function</span> <span style=color:#a6e22e>evaluateExpression</span>(<span style=color:#a6e22e>expressionArray</span>) {
+  <span style=color:#66d9ef>const</span> <span style=color:#a6e22e>expression</span> <span style=color:#f92672>=</span> [...<span style=color:#a6e22e>expressionArray</span>];
+  <span style=color:#66d9ef>let</span> <span style=color:#a6e22e>openingParenthesesIndex</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>expression</span>.<span style=color:#a6e22e>findIndex</span>((<span style=color:#a6e22e>o</span>) =&gt; <span style=color:#a6e22e>o</span> <span style=color:#f92672>===</span> <span style=color:#e6db74>&#39;(&#39;</span>);
+  <span style=color:#66d9ef>while</span> (<span style=color:#a6e22e>openingParenthesesIndex</span> <span style=color:#f92672>!==</span> <span style=color:#f92672>-</span><span style=color:#ae81ff>1</span>) {
+    <span style=color:#75715e>// do something
+</span><span style=color:#75715e></span>    <span style=color:#a6e22e>openingParenthesesIndex</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>expression</span>.<span style=color:#a6e22e>findIndex</span>((<span style=color:#a6e22e>o</span>) =&gt; <span style=color:#a6e22e>o</span> <span style=color:#f92672>===</span> <span style=color:#e6db74>&#39;(&#39;</span>);
+  }
+  <span style=color:#a6e22e>evaluationTiers</span>.<span style=color:#a6e22e>forEach</span>((<span style=color:#a6e22e>tier</span>) =&gt; {
+    <span style=color:#66d9ef>let</span> <span style=color:#a6e22e>nextOperatorIndex</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>getNextOperatorIndex</span>(<span style=color:#a6e22e>expression</span>, <span style=color:#a6e22e>tier</span>);
+    <span style=color:#66d9ef>while</span> (<span style=color:#a6e22e>nextOperatorIndex</span> <span style=color:#f92672>!==</span> <span style=color:#f92672>-</span><span style=color:#ae81ff>1</span>) {
+      <span style=color:#66d9ef>const</span> <span style=color:#a6e22e>result</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>evalOperation</span>(
+        ...<span style=color:#a6e22e>expression</span>.<span style=color:#a6e22e>slice</span>(<span style=color:#a6e22e>nextOperatorIndex</span> <span style=color:#f92672>-</span> <span style=color:#ae81ff>1</span>, <span style=color:#a6e22e>nextOperatorIndex</span> <span style=color:#f92672>+</span> <span style=color:#ae81ff>2</span>)
+      );
+      <span style=color:#a6e22e>expression</span>.<span style=color:#a6e22e>splice</span>(<span style=color:#a6e22e>nextOperatorIndex</span> <span style=color:#f92672>-</span> <span style=color:#ae81ff>1</span>, <span style=color:#ae81ff>3</span>, <span style=color:#a6e22e>result</span>);
+      <span style=color:#a6e22e>nextOperatorIndex</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>getNextOperatorIndex</span>(<span style=color:#a6e22e>expression</span>, <span style=color:#a6e22e>tier</span>);
+    }
+  });
+  <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>expression</span>[<span style=color:#ae81ff>0</span>];
+}
+</code></pre></div><h3 id=where-is-the-closing-parentheses>Where is the closing parentheses?<a hidden class=anchor aria-hidden=true href=#where-is-the-closing-parentheses>#</a></h3>
+<p>But how do we find the closing parentheses? We can declare a variable called parentheses depth that will keep track of how deep into parentheses we go. We have to do this so we dont think the first closing paren in an expression like <code>$(2*(2+3) + 2)$</code> is the one we are looking for and try and treat <code>$2*(2+3$</code> as a subexpression.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-javascript data-lang=javascript><span style=color:#66d9ef>function</span> <span style=color:#a6e22e>findClosingParenthesesIndex</span>(<span style=color:#a6e22e>expression</span>, <span style=color:#a6e22e>openingParenthesesIndex</span>) {
+  <span style=color:#66d9ef>let</span> <span style=color:#a6e22e>parenthesesDepth</span> <span style=color:#f92672>=</span> <span style=color:#ae81ff>1</span>;
+  <span style=color:#66d9ef>for</span> (<span style=color:#66d9ef>let</span> <span style=color:#a6e22e>i</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>openingParenthesesIndex</span> <span style=color:#f92672>+</span> <span style=color:#ae81ff>1</span>; <span style=color:#a6e22e>i</span> <span style=color:#f92672>&lt;</span> <span style=color:#a6e22e>expression</span>.<span style=color:#a6e22e>length</span>; <span style=color:#a6e22e>i</span> <span style=color:#f92672>+=</span> <span style=color:#ae81ff>1</span>) {
+    <span style=color:#66d9ef>if</span> (<span style=color:#a6e22e>expression</span>[<span style=color:#a6e22e>i</span>] <span style=color:#f92672>===</span> <span style=color:#e6db74>&#39;(&#39;</span>) {
+      <span style=color:#a6e22e>parenthesesDepth</span> <span style=color:#f92672>+=</span> <span style=color:#ae81ff>1</span>;
+    } <span style=color:#66d9ef>else</span> <span style=color:#66d9ef>if</span> (<span style=color:#a6e22e>expression</span>[<span style=color:#a6e22e>i</span>] <span style=color:#f92672>===</span> <span style=color:#e6db74>&#39;)&#39;</span>) {
+      <span style=color:#a6e22e>parenthesesDepth</span> <span style=color:#f92672>-=</span> <span style=color:#ae81ff>1</span>;
+      <span style=color:#66d9ef>if</span> (<span style=color:#a6e22e>parenthesesDepth</span> <span style=color:#f92672>===</span> <span style=color:#ae81ff>0</span>) {
+        <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>i</span>;
+      }
+    }
+  }
+  <span style=color:#66d9ef>return</span> <span style=color:#e6db74>&#39;Error: no closing parentheses found&#39;</span>;
+}
+</code></pre></div><h3 id=the-whole-thing>The whole thing<a hidden class=anchor aria-hidden=true href=#the-whole-thing>#</a></h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-javascript data-lang=javascript><span style=color:#66d9ef>function</span> <span style=color:#a6e22e>evaluateExpression</span>(<span style=color:#a6e22e>expressionArray</span>) {
+  <span style=color:#66d9ef>const</span> <span style=color:#a6e22e>expression</span> <span style=color:#f92672>=</span> [...<span style=color:#a6e22e>expressionArray</span>];
+  <span style=color:#66d9ef>let</span> <span style=color:#a6e22e>openingParenthesesIndex</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>expression</span>.<span style=color:#a6e22e>findIndex</span>((<span style=color:#a6e22e>o</span>) =&gt; <span style=color:#a6e22e>o</span> <span style=color:#f92672>===</span> <span style=color:#e6db74>&#39;(&#39;</span>);
+  <span style=color:#66d9ef>while</span> (<span style=color:#a6e22e>openingParenthesesIndex</span> <span style=color:#f92672>!==</span> <span style=color:#f92672>-</span><span style=color:#ae81ff>1</span>) {
+    <span style=color:#66d9ef>const</span> <span style=color:#a6e22e>subexpression</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>getSubexpression</span>(<span style=color:#a6e22e>expression</span>, <span style=color:#a6e22e>openingParenthesesIndex</span>);
+    <span style=color:#75715e>// recurse into subexpression
+</span><span style=color:#75715e></span>    <span style=color:#66d9ef>const</span> <span style=color:#a6e22e>subexpressionResult</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>evaluateExpression</span>(<span style=color:#a6e22e>subexpression</span>);
+    <span style=color:#75715e>// we need to add two to length
+</span><span style=color:#75715e></span>    <span style=color:#75715e>// because subexpression doesn&#39;t include its bounding parentheses
+</span><span style=color:#75715e></span>    <span style=color:#a6e22e>expression</span>.<span style=color:#a6e22e>splice</span>(
+      <span style=color:#a6e22e>openingParenthesesIndex</span>,
+      <span style=color:#a6e22e>subexpression</span>.<span style=color:#a6e22e>length</span> <span style=color:#f92672>+</span> <span style=color:#ae81ff>2</span>,
+      <span style=color:#a6e22e>subexpressionResult</span>,
+    );
+    <span style=color:#a6e22e>openingParenthesesIndex</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>expression</span>.<span style=color:#a6e22e>findIndex</span>((<span style=color:#a6e22e>o</span>) =&gt; <span style=color:#a6e22e>o</span> <span style=color:#f92672>===</span> <span style=color:#e6db74>&#39;(&#39;</span>);
+  }
+  <span style=color:#a6e22e>evaluationTiers</span>.<span style=color:#a6e22e>forEach</span>((<span style=color:#a6e22e>tier</span>) =&gt; {
+    <span style=color:#66d9ef>let</span> <span style=color:#a6e22e>nextOperatorIndex</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>getNextOperatorIndex</span>(<span style=color:#a6e22e>expression</span>, <span style=color:#a6e22e>tier</span>);
+    <span style=color:#66d9ef>while</span> (<span style=color:#a6e22e>nextOperatorIndex</span> <span style=color:#f92672>!==</span> <span style=color:#f92672>-</span><span style=color:#ae81ff>1</span>) {
+      <span style=color:#a6e22e>performOperation</span>(<span style=color:#a6e22e>expression</span>, <span style=color:#a6e22e>nextOperatorIndex</span>);
+      <span style=color:#a6e22e>nextOperatorIndex</span> <span style=color:#f92672>=</span> <span style=color:#a6e22e>getNextOperatorIndex</span>(<span style=color:#a6e22e>expression</span>, <span style=color:#a6e22e>tier</span>);
+    }
+  });
+  <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>expression</span>[<span style=color:#ae81ff>0</span>];
+}
+</code></pre></div><h2 id=formatting-a-string-into-an-expression-array>Formatting a String into an Expression Array<a hidden class=anchor aria-hidden=true href=#formatting-a-string-into-an-expression-array>#</a></h2>
+<p>Just for fun, I wrote a method to take in a string and format it like an expression array we&rsquo;ve been using. I like a chance to practice using regex, call me crazy.</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-javascript data-lang=javascript><span style=color:#66d9ef>function</span> <span style=color:#a6e22e>parseExpression</span>(<span style=color:#a6e22e>expressionString</span>) {
+  <span style=color:#66d9ef>const</span> <span style=color:#a6e22e>expressionArray</span> <span style=color:#f92672>=</span> Array.<span style=color:#a6e22e>from</span>(
+    <span style=color:#a6e22e>expressionString</span>.<span style=color:#a6e22e>matchAll</span>(
+      <span style=color:#e6db74>/-?[0-9]+\.?[0-9]*|\*{2}|\*{1}|\/|\+|-|\(|\)/g</span>
+    )
+  ).<span style=color:#a6e22e>map</span>((<span style=color:#a6e22e>v</span>) =&gt; <span style=color:#a6e22e>v</span>[<span style=color:#ae81ff>0</span>]);
+  <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>expressionArray</span>.<span style=color:#a6e22e>map</span>((<span style=color:#a6e22e>term</span>) =&gt; {
+    <span style=color:#66d9ef>if</span> (Number.isNaN(parseFloat(<span style=color:#a6e22e>term</span>))) {
+      <span style=color:#66d9ef>return</span> <span style=color:#a6e22e>term</span>;
+    }
+    <span style=color:#66d9ef>return</span> parseFloat(<span style=color:#a6e22e>term</span>);
+  });
+}
+</code></pre></div><h2 id=closing-thoughts>Closing Thoughts<a hidden class=anchor aria-hidden=true href=#closing-thoughts>#</a></h2>
+<p>I feel like writing this forced me to refactor my code to be easir to present in this blog and write more helper functions so that the main function would be less bloated looking.</p>
+<p>I really like any time I get to use recursion in a reasonable way so I enjoyed figuring out how to deal with parentheses. I like this project because I feel like I came away witha deeper understanding of how expressions are evaluated. What a wild ride! You can check out the game calculationster here:</p>
+</div>
+<footer class=post-footer>
+<ul class=post-tags>
+<li><a href=https://maxraysavage.github.io/tags/javascript/>javascript</a></li>
+</ul>
+<div class=share-buttons>
+<a target=_blank rel="noopener noreferrer" aria-label="share PEMDAS From Scratch on twitter" href="https://twitter.com/intent/tweet/?text=PEMDAS%20From%20Scratch&url=https%3a%2f%2fmaxraysavage.github.io%2fposts%2fpemdas-from-scratch%2f&hashtags=javascript"><svg viewBox="0 0 512 512"><path d="M449.446.0C483.971.0 512 28.03 512 62.554v386.892C512 483.97 483.97 512 449.446 512H62.554c-34.524.0-62.554-28.03-62.554-62.554V62.554c0-34.524 28.029-62.554 62.554-62.554h386.892zM195.519 424.544c135.939.0 210.268-112.643 210.268-210.268.0-3.218.0-6.437-.153-9.502 14.406-10.421 26.973-23.448 36.935-38.314-13.18 5.824-27.433 9.809-42.452 11.648 15.326-9.196 26.973-23.602 32.49-40.92-14.252 8.429-30.038 14.56-46.896 17.931-13.487-14.406-32.644-23.295-53.946-23.295-40.767.0-73.87 33.104-73.87 73.87.0 5.824.613 11.494 1.992 16.858-61.456-3.065-115.862-32.49-152.337-77.241-6.284 10.881-9.962 23.601-9.962 37.088.0 25.594 13.027 48.276 32.95 61.456-12.107-.307-23.448-3.678-33.41-9.196v.92c0 35.862 25.441 65.594 59.311 72.49-6.13 1.686-12.72 2.606-19.464 2.606-4.751.0-9.348-.46-13.946-1.38 9.349 29.426 36.628 50.728 68.965 51.341-25.287 19.771-57.164 31.571-91.8 31.571-5.977.0-11.801-.306-17.625-1.073 32.337 21.15 71.264 33.41 112.95 33.41z"/></svg>
+</a>
+<a target=_blank rel="noopener noreferrer" aria-label="share PEMDAS From Scratch on linkedin" href="https://www.linkedin.com/shareArticle?mini=true&url=https%3a%2f%2fmaxraysavage.github.io%2fposts%2fpemdas-from-scratch%2f&title=PEMDAS%20From%20Scratch&summary=PEMDAS%20From%20Scratch&source=https%3a%2f%2fmaxraysavage.github.io%2fposts%2fpemdas-from-scratch%2f"><svg viewBox="0 0 512 512"><path d="M449.446.0C483.971.0 512 28.03 512 62.554v386.892C512 483.97 483.97 512 449.446 512H62.554c-34.524.0-62.554-28.03-62.554-62.554V62.554c0-34.524 28.029-62.554 62.554-62.554h386.892zM160.461 423.278V197.561h-75.04v225.717h75.04zm270.539.0V293.839c0-69.333-37.018-101.586-86.381-101.586-39.804.0-57.634 21.891-67.617 37.266v-31.958h-75.021c.995 21.181.0 225.717.0 225.717h75.02V297.222c0-6.748.486-13.492 2.474-18.315 5.414-13.475 17.767-27.434 38.494-27.434 27.135.0 38.007 20.707 38.007 51.037v120.768H431zM123.448 88.722C97.774 88.722 81 105.601 81 127.724c0 21.658 16.264 39.002 41.455 39.002h.484c26.165.0 42.452-17.344 42.452-39.002-.485-22.092-16.241-38.954-41.943-39.002z"/></svg>
+</a>
+<a target=_blank rel="noopener noreferrer" aria-label="share PEMDAS From Scratch on reddit" href="https://reddit.com/submit?url=https%3a%2f%2fmaxraysavage.github.io%2fposts%2fpemdas-from-scratch%2f&title=PEMDAS%20From%20Scratch"><svg viewBox="0 0 512 512"><path d="M449.446.0C483.971.0 512 28.03 512 62.554v386.892C512 483.97 483.97 512 449.446 512H62.554c-34.524.0-62.554-28.03-62.554-62.554V62.554c0-34.524 28.029-62.554 62.554-62.554h386.892zM446 265.638c0-22.964-18.616-41.58-41.58-41.58-11.211.0-21.361 4.457-28.841 11.666-28.424-20.508-67.586-33.757-111.204-35.278l18.941-89.121 61.884 13.157c.756 15.734 13.642 28.29 29.56 28.29 16.407.0 29.706-13.299 29.706-29.701.0-16.403-13.299-29.702-29.706-29.702-11.666.0-21.657 6.792-26.515 16.578l-69.105-14.69c-1.922-.418-3.939-.042-5.585 1.036-1.658 1.073-2.811 2.761-3.224 4.686l-21.152 99.438c-44.258 1.228-84.046 14.494-112.837 35.232-7.468-7.164-17.589-11.591-28.757-11.591-22.965.0-41.585 18.616-41.585 41.58.0 16.896 10.095 31.41 24.568 37.918-.639 4.135-.99 8.328-.99 12.576.0 63.977 74.469 115.836 166.33 115.836s166.334-51.859 166.334-115.836c0-4.218-.347-8.387-.977-12.493 14.564-6.47 24.735-21.034 24.735-38.001zM326.526 373.831c-20.27 20.241-59.115 21.816-70.534 21.816-11.428.0-50.277-1.575-70.522-21.82-3.007-3.008-3.007-7.882.0-10.889 3.003-2.999 7.882-3.003 10.885.0 12.777 12.781 40.11 17.317 59.637 17.317 19.522.0 46.86-4.536 59.657-17.321 3.016-2.999 7.886-2.995 10.885.008 3.008 3.011 3.003 7.882-.008 10.889zm-5.23-48.781c-16.373.0-29.701-13.324-29.701-29.698.0-16.381 13.328-29.714 29.701-29.714 16.378.0 29.706 13.333 29.706 29.714.0 16.374-13.328 29.698-29.706 29.698zM160.91 295.348c0-16.381 13.328-29.71 29.714-29.71 16.369.0 29.689 13.329 29.689 29.71.0 16.373-13.32 29.693-29.689 29.693-16.386.0-29.714-13.32-29.714-29.693z"/></svg>
+</a>
+<a target=_blank rel="noopener noreferrer" aria-label="share PEMDAS From Scratch on facebook" href="https://facebook.com/sharer/sharer.php?u=https%3a%2f%2fmaxraysavage.github.io%2fposts%2fpemdas-from-scratch%2f"><svg viewBox="0 0 512 512"><path d="M449.446.0C483.971.0 512 28.03 512 62.554v386.892C512 483.97 483.97 512 449.446 512H342.978V319.085h66.6l12.672-82.621h-79.272v-53.617c0-22.603 11.073-44.636 46.58-44.636H425.6v-70.34s-32.71-5.582-63.982-5.582c-65.288.0-107.96 39.569-107.96 111.204v62.971h-72.573v82.621h72.573V512h-191.104c-34.524.0-62.554-28.03-62.554-62.554V62.554c0-34.524 28.029-62.554 62.554-62.554h386.892z"/></svg>
+</a>
+<a target=_blank rel="noopener noreferrer" aria-label="share PEMDAS From Scratch on whatsapp" href="https://api.whatsapp.com/send?text=PEMDAS%20From%20Scratch%20-%20https%3a%2f%2fmaxraysavage.github.io%2fposts%2fpemdas-from-scratch%2f"><svg viewBox="0 0 512 512"><path d="M449.446.0C483.971.0 512 28.03 512 62.554v386.892C512 483.97 483.97 512 449.446 512H62.554c-34.524.0-62.554-28.03-62.554-62.554V62.554c0-34.524 28.029-62.554 62.554-62.554h386.892zm-58.673 127.703c-33.842-33.881-78.847-52.548-126.798-52.568-98.799.0-179.21 80.405-179.249 179.234-.013 31.593 8.241 62.428 23.927 89.612l-25.429 92.884 95.021-24.925c26.181 14.28 55.659 21.807 85.658 21.816h.074c98.789.0 179.206-80.413 179.247-179.243.018-47.895-18.61-92.93-52.451-126.81zM263.976 403.485h-.06c-26.734-.01-52.954-7.193-75.828-20.767l-5.441-3.229-56.386 14.792 15.05-54.977-3.542-5.637c-14.913-23.72-22.791-51.136-22.779-79.287.033-82.142 66.867-148.971 149.046-148.971 39.793.014 77.199 15.531 105.329 43.692 28.128 28.16 43.609 65.592 43.594 105.4-.034 82.149-66.866 148.983-148.983 148.984zm81.721-111.581c-4.479-2.242-26.499-13.075-30.604-14.571-4.105-1.495-7.091-2.241-10.077 2.241-2.986 4.483-11.569 14.572-14.182 17.562-2.612 2.988-5.225 3.364-9.703 1.12-4.479-2.241-18.91-6.97-36.017-22.23C231.8 264.15 222.81 249.484 220.198 245s-.279-6.908 1.963-9.14c2.016-2.007 4.48-5.232 6.719-7.847 2.24-2.615 2.986-4.484 4.479-7.472 1.493-2.99.747-5.604-.374-7.846-1.119-2.241-10.077-24.288-13.809-33.256-3.635-8.733-7.327-7.55-10.077-7.688-2.609-.13-5.598-.158-8.583-.158-2.986.0-7.839 1.121-11.944 5.604-4.105 4.484-15.675 15.32-15.675 37.364.0 22.046 16.048 43.342 18.287 46.332 2.24 2.99 31.582 48.227 76.511 67.627 10.685 4.615 19.028 7.371 25.533 9.434 10.728 3.41 20.492 2.929 28.209 1.775 8.605-1.285 26.499-10.833 30.231-21.295 3.732-10.464 3.732-19.431 2.612-21.298-1.119-1.869-4.105-2.99-8.583-5.232z"/></svg>
+</a>
+<a target=_blank rel="noopener noreferrer" aria-label="share PEMDAS From Scratch on telegram" href="https://telegram.me/share/url?text=PEMDAS%20From%20Scratch&url=https%3a%2f%2fmaxraysavage.github.io%2fposts%2fpemdas-from-scratch%2f"><svg viewBox="2 2 28 28"><path d="M26.49 29.86H5.5a3.37 3.37.0 01-2.47-1 3.35 3.35.0 01-1-2.47V5.48A3.36 3.36.0 013 3 3.37 3.37.0 015.5 2h21A3.38 3.38.0 0129 3a3.36 3.36.0 011 2.46V26.37a3.35 3.35.0 01-1 2.47 3.38 3.38.0 01-2.51 1.02zm-5.38-6.71a.79.79.0 00.85-.66L24.73 9.24a.55.55.0 00-.18-.46.62.62.0 00-.41-.17q-.08.0-16.53 6.11a.59.59.0 00-.41.59.57.57.0 00.43.52l4 1.24 1.61 4.83a.62.62.0 00.63.43.56.56.0 00.4-.17L16.54 20l4.09 3A.9.9.0 0021.11 23.15zM13.8 20.71l-1.21-4q8.72-5.55 8.78-5.55c.15.0.23.0.23.16a.18.18.0 010 .06s-2.51 2.3-7.52 6.8z"/></svg>
+</a>
+</div>
+</footer>
+</article>
+</main><footer class=footer>
+<span>&copy; 2021 <a href=https://maxraysavage.github.io/>Maxray's Website</a></span>
+<span>&#183;</span>
+<span>Powered by <a href=https://gohugo.io/ rel="noopener noreferrer" target=_blank>Hugo</a></span>
+<span>&#183;</span>
+<span>Theme <a href=https://git.io/hugopapermod rel=noopener target=_blank>PaperMod</a></span>
+</footer>
+<a href=#top aria-label="go to top" title="Go to Top (Alt + G)">
+<button class=top-link id=top-link type=button accesskey=g><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentcolor"><path d="M12 6H0l6-6z"/></svg>
+</button>
+</a>
+<script defer src=/assets/js/highlight.min.7680afc38aa6b15ddf158a4f3780b7b1f7dde7e91d26f073e6229bb7a0793c92.js integrity="sha256-doCvw4qmsV3fFYpPN4C3sffd5+kdJvBz5iKbt6B5PJI=" onload=hljs.initHighlightingOnLoad()></script>
+<script>window.onload=function(){localStorage.getItem("menu-scroll-position")&&(document.getElementById('menu').scrollLeft=localStorage.getItem("menu-scroll-position"))},document.querySelectorAll('a[href^="#"]').forEach(a=>{a.addEventListener("click",function(b){b.preventDefault();var a=this.getAttribute("href").substr(1);window.matchMedia('(prefers-reduced-motion: reduce)').matches?document.querySelector(`[id='${decodeURIComponent(a)}']`).scrollIntoView():document.querySelector(`[id='${decodeURIComponent(a)}']`).scrollIntoView({behavior:"smooth"}),a==="top"?history.replaceState(null,null," "):history.pushState(null,null,`#${a}`)})});var mybutton=document.getElementById("top-link");window.onscroll=function(){document.body.scrollTop>800||document.documentElement.scrollTop>800?(mybutton.style.visibility="visible",mybutton.style.opacity="1"):(mybutton.style.visibility="hidden",mybutton.style.opacity="0")};function menu_on_scroll(){localStorage.setItem("menu-scroll-position",document.getElementById('menu').scrollLeft)}</script>
+<script>document.getElementById("theme-toggle").addEventListener("click",()=>{document.body.className.includes("dark")?(document.body.classList.remove('dark'),localStorage.setItem("pref-theme",'light')):(document.body.classList.add('dark'),localStorage.setItem("pref-theme",'dark'))})</script>
+</body>
+</html>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
     <title>javascript on Maxray&#39;s Website</title>
     <link>https://maxraysavage.github.io/tags/javascript/</link>
@@ -12,7 +12,7 @@
       <pubDate>Tue, 14 Sep 2021 15:48:44 -0400</pubDate>
       
       <guid>https://maxraysavage.github.io/posts/pemdas-from-scratch/</guid>
-      <description>Intro A few months ago I made an edutainment game for The Odin Project&amp;rsquo;s first game jame. My team had decided to build a game for practicing basic math. I took on the task of generating the problems as appropriate for each level of the game. It was hard! Generating random arithmetic expressions within certain difficulty constraints wasn&amp;rsquo;t simple. In order to enforce our constraints, I wrote my own script to evaluate expressions step by step so I could tell if my problems conformed to my difficulty constraints.</description>
+      <description>Coding an arithmetic expression evaluator in Javascript</description>
     </item>
     
   </channel>

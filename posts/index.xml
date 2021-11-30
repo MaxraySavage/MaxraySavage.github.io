@@ -5,7 +5,17 @@
     <link>https://maxraysavage.github.io/posts/</link>
     <description>Recent content in Posts on Maxray&#39;s Website</description>
     <generator>Hugo -- gohugo.io</generator>
-    <lastBuildDate>Tue, 14 Sep 2021 15:48:44 -0400</lastBuildDate><atom:link href="https://maxraysavage.github.io/posts/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Tue, 30 Nov 2021 12:19:03 -0500</lastBuildDate><atom:link href="https://maxraysavage.github.io/posts/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Launch Your Spring Portfolio Project Fast</title>
+      <link>https://maxraysavage.github.io/posts/launch-your-spring-portfolio-project-fast/</link>
+      <pubDate>Tue, 30 Nov 2021 12:19:03 -0500</pubDate>
+      
+      <guid>https://maxraysavage.github.io/posts/launch-your-spring-portfolio-project-fast/</guid>
+      <description>Launch Your Spring Code Fast - 101 You are building a portfolio project using Gradle, Java 11, Hibernate, JPA, MySQL and Srping Boot and you want to launch a cloud instance of your project so people can check it out and tell you how cool it is. I too have had this desire! And I did it! And so can you! With Heroku!
+Database Config Heroku needs a system.properties file to know which version of java your app uses.</description>
+    </item>
+    
     <item>
       <title>PEMDAS From Scratch</title>
       <link>https://maxraysavage.github.io/posts/pemdas-from-scratch/</link>
